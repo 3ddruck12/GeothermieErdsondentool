@@ -106,10 +106,10 @@ jobs:
         # Create DEB
         fpm -s dir -t deb \
           -n geothermie-erdsondentool \
-          -v 3.0.0 \
+          -v 3.1.0 \
           --architecture amd64 \
           --description "Open-Source Tool zur Berechnung von Erdwärmesonden bis 100m Tiefe" \
-          --url "https://github.com/3ddruck12/GeothermieErdsondentool" \
+          --url "https://github.com/3ddruck12/Geothermie-Erdsonden-Tool" \
           --maintainer "3ddruck12" \
           --license "MIT" \
           -C package \
@@ -149,7 +149,7 @@ jobs:
           
           ### Downloads
           - **Windows**: `GeothermieErdsondentool.exe`
-          - **Linux**: `geothermie-erdsondentool_3.0.0_amd64.deb`
+          - **Linux**: `geothermie-erdsondentool_3.1.0_amd64.deb`
           
           ### Installation
           
@@ -159,7 +159,7 @@ jobs:
           
           #### Linux (Debian/Ubuntu)
           ```bash
-          sudo dpkg -i geothermie-erdsondentool_3.0.0_amd64.deb
+          sudo dpkg -i geothermie-erdsondentool_3.1.0_amd64.deb
           sudo apt-get install -f  # Falls Abhängigkeiten fehlen
           ```
           
@@ -172,7 +172,7 @@ jobs:
           - ✅ Verfüllmaterial-Datenbank
           - ✅ Info-Buttons mit Hilfe
           
-          [Vollständige Dokumentation](https://github.com/3ddruck12/GeothermieErdsondentool/tree/main/docs)
+          [Vollständige Dokumentation](https://github.com/3ddruck12/Geothermie-Erdsonden-Tool/tree/main/docs)
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
