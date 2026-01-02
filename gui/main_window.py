@@ -600,7 +600,8 @@ Version: 1.0
 Ein Open-Source-Tool zur Dimensionierung von
 Erdwärmesonden bis 100m Tiefe.
 
-Inspiriert von Earth Energy Designer (EED)
+Basierend auf wissenschaftlichen Methoden nach
+VDI 4640, Eskilson und Hellström
 
 Entwickelt mit Python und tkinter
         
