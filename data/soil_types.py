@@ -207,6 +207,11 @@ class SoilTypeDB:
 
 if __name__ == "__main__":
     # Test
+    import sys
+    # Erzwinge UTF-8 Encoding für Ausgabe (Windows-Kompatibilität)
+    if sys.platform == 'win32':
+        sys.stdout.reconfigure(encoding='utf-8')
+    
     db = SoilTypeDB()
     
     print("Verfügbare Bodentypen:")
@@ -214,7 +219,7 @@ if __name__ == "__main__":
     
     for name, soil in db.get_all_soil_types().items():
         print(f"\n{name}:")
-        print(f"  λ: {soil.thermal_conductivity_min}-{soil.thermal_conductivity_max} W/m·K (typ: {soil.thermal_conductivity_typical})")
+        print(f"  lambda: {soil.thermal_conductivity_min}-{soil.thermal_conductivity_max} W/m·K (typ: {soil.thermal_conductivity_typical})")
         print(f"  c: {soil.heat_capacity_min}-{soil.heat_capacity_max} MJ/m³·K (typ: {soil.heat_capacity_typical})")
         print(f"  Wärmeentzug: {soil.heat_extraction_rate_min}-{soil.heat_extraction_rate_max} W/m")
         print(f"  {soil.description}")

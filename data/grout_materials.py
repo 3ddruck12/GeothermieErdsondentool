@@ -159,13 +159,18 @@ class GroutMaterialDB:
 
 if __name__ == "__main__":
     # Test
+    import sys
+    # Erzwinge UTF-8 Encoding für Ausgabe (Windows-Kompatibilität)
+    if sys.platform == 'win32':
+        sys.stdout.reconfigure(encoding='utf-8')
+    
     db = GroutMaterialDB()
     
     print("Verfügbare Materialien:")
     for name, mat in db.get_all_materials().items():
         print(f"\n{name}:")
-        print(f"  λ = {mat.thermal_conductivity} W/m·K")
-        print(f"  ρ = {mat.density} kg/m³")
+        print(f"  lambda = {mat.thermal_conductivity} W/m·K")
+        print(f"  rho = {mat.density} kg/m³")
         print(f"  Preis: {mat.price_per_kg} EUR/kg")
         print(f"  {mat.description}")
     
