@@ -62,7 +62,9 @@ class PDFReportGenerator:
         result,
         params: dict,
         project_info: dict,
-        borehole_config: dict
+        borehole_config: dict,
+        grout_calculation: dict = None,
+        hydraulics_result: dict = None
     ):
         """
         Generiert einen kompletten PDF-Bericht.
@@ -245,6 +247,63 @@ class PDFReportGenerator:
         story.append(load_table)
         story.append(Spacer(1, 1*cm))
         
+        # === VERFÜLLMATERIAL-BERECHNUNG ===
+        if grout_calculation:
+            story.append(Paragraph("Verfüllmaterial-Berechnung", self.styles['CustomHeading']))
+            
+            material = grout_calculation.get('material')
+            amounts = grout_calculation.get('amounts')
+            num_boreholes = grout_calculation.get('num_boreholes', 1)
+            volume_per_bh = grout_calculation.get('volume_per_bh', 0)
+            total_volume = volume_per_bh * num_boreholes
+            
+            # Material-Info
+            material_info = Paragraph(
+                f"<b>Material:</b> {material.name}<br/>"
+                f"<b>Wärmeleitfähigkeit:</b> {material.thermal_conductivity} W/m·K<br/>"
+                f"<b>Dichte:</b> {material.density} kg/m³<br/>"
+                f"<b>Preis:</b> {material.price_per_kg} EUR/kg",
+                self.styles['CustomBody']
+            )
+            story.append(material_info)
+            story.append(Spacer(1, 0.5*cm))
+            
+            # Mengen-Tabelle mit Liter!
+            grout_data = [
+                ['Parameter', 'Wert', 'Einheit'],
+                ['Volumen pro Bohrung', f"{volume_per_bh:.3f} m³ ({volume_per_bh*1000:.1f} Liter)", ''],
+                ['Volumen gesamt', f"{total_volume:.3f} m³ ({total_volume*1000:.1f} Liter)", ''],
+                ['Masse gesamt', f"{amounts['mass_kg']:.1f}", 'kg'],
+                ['Säcke (25 kg)', f"{amounts['bags_25kg']:.1f}", 'Stück'],
+                ['Kosten gesamt', f"{amounts['total_cost_eur']:.2f}", 'EUR'],
+                ['Kosten pro Meter', f"{amounts['cost_per_m']:.2f}", 'EUR/m']
+            ]
+            
+            grout_table = Table(grout_data, colWidths=[9*cm, 6*cm, 2*cm])
+            grout_table.setStyle(self._get_table_style())
+            story.append(grout_table)
+            story.append(Spacer(1, 1*cm))
+        
+        # === HYDRAULIK-BERECHNUNG ===
+        if hydraulics_result:
+            story.append(Paragraph("Hydraulik-Berechnung", self.styles['CustomHeading']))
+            
+            hydraulics_data = [
+                ['Parameter', 'Wert', 'Einheit'],
+                ['Benötigter Volumenstrom', f"{hydraulics_result.get('volume_flow_m3_h', 0):.3f}", 'm³/h'],
+                ['Volumenstrom', f"{hydraulics_result.get('volume_flow_m3_h', 0)*1000/60:.2f}", 'L/min'],
+                ['Druckverlust pro Bohrung', f"{hydraulics_result.get('pressure_drop_per_borehole_mbar', 0):.1f}", 'mbar'],
+                ['System-Gesamtdruckverlust', f"{hydraulics_result.get('total_pressure_drop_mbar', 0):.1f}", 'mbar'],
+                ['Benötigte Pumpenleistung', f"{hydraulics_result.get('pump_power_w', 0):.1f}", 'W'],
+                ['Reynolds-Zahl', f"{hydraulics_result.get('reynolds_number', 0):.0f}", '-'],
+                ['Strömungsregime', hydraulics_result.get('flow_regime', 'N/A'), '']
+            ]
+            
+            hydraulics_table = Table(hydraulics_data, colWidths=[9*cm, 5*cm, 3*cm])
+            hydraulics_table.setStyle(self._get_table_style())
+            story.append(hydraulics_table)
+            story.append(Spacer(1, 1*cm))
+        
         # === VISUALISIERUNGEN ===
         story.append(PageBreak())
         story.append(Paragraph("Visualisierungen", self.styles['CustomHeading']))
@@ -252,6 +311,7 @@ class PDFReportGenerator:
         # Erstelle Diagramme
         temp_plot_path = self._create_temperature_plot(result)
         borehole_plot_path = self._create_detailed_borehole_plot(params, result)
+        static_borehole_path = self._create_static_borehole_graphic(params)
         
         if temp_plot_path and os.path.exists(temp_plot_path):
             story.append(Paragraph("Monatliche Fluidtemperaturen", self.styles['CustomBody']))
@@ -259,8 +319,15 @@ class PDFReportGenerator:
             story.append(img)
             story.append(Spacer(1, 0.5*cm))
         
+        if static_borehole_path and os.path.exists(static_borehole_path):
+            story.append(Paragraph("Erdsonden-Aufbau (4-Rohr-System)", self.styles['CustomBody']))
+            img = Image(static_borehole_path, width=10*cm, height=14*cm)
+            story.append(img)
+            story.append(Spacer(1, 0.5*cm))
+        
         if borehole_plot_path and os.path.exists(borehole_plot_path):
-            story.append(Paragraph("Bohrloch-Schema mit Werten", self.styles['CustomBody']))
+            story.append(PageBreak())
+            story.append(Paragraph("Bohrloch-Schema mit Berechnungswerten", self.styles['CustomBody']))
             img = Image(borehole_plot_path, width=16*cm, height=12*cm)
             story.append(img)
         
@@ -284,6 +351,8 @@ class PDFReportGenerator:
             os.remove(temp_plot_path)
         if borehole_plot_path and os.path.exists(borehole_plot_path):
             os.remove(borehole_plot_path)
+        if static_borehole_path and os.path.exists(static_borehole_path):
+            os.remove(static_borehole_path)
     
     def _get_table_style(self):
         """Gibt einen Standard-Tabellenstyle zurück."""
@@ -445,6 +514,117 @@ class PDFReportGenerator:
             return temp_file.name
         except Exception as e:
             print(f"Fehler beim Erstellen des Bohrloch-Plots: {e}")
+            return None
+    
+    def _create_static_borehole_graphic(self, params):
+        """Erstellt eine statische Erklärungsgrafik einer Erdsonde mit 4 Leitungen (wie in der GUI)."""
+        try:
+            from matplotlib.patches import Arc
+            
+            fig, ax = plt.subplots(figsize=(5.5, 8), facecolor='white')
+            
+            # === SEITLICHE ANSICHT (Schnitt durch Sonde) ===
+            # Boden (braun)
+            ground = Rectangle((0, 0), 10, 15, facecolor='#8B4513', alpha=0.3)
+            ax.add_patch(ground)
+            
+            # Bohrloch (hellgrau) - EIN Bohrloch mit 4 Leitungen ENGER zusammen
+            borehole_width = 1.0
+            borehole_center = 5.0
+            borehole = Rectangle((borehole_center - borehole_width/2, 0), borehole_width, 15, 
+                                facecolor='#d9d9d9', edgecolor='black', linewidth=2)
+            ax.add_patch(borehole)
+            
+            # 4 Leitungen ENGER zusammen
+            spacing = 0.2
+            center_offset = spacing * 1.5
+            
+            # Rohr 1 & 2 (links im Bohrloch)
+            ax.plot([borehole_center - center_offset, borehole_center - center_offset], [0, 15], 
+                   color='#ff6b6b', linewidth=5, solid_capstyle='round')
+            ax.plot([borehole_center - center_offset + spacing, borehole_center - center_offset + spacing], [0, 15], 
+                   color='#4ecdc4', linewidth=5, solid_capstyle='round')
+            
+            # Rohr 3 & 4 (rechts im Bohrloch)
+            ax.plot([borehole_center + center_offset - spacing, borehole_center + center_offset - spacing], [0, 15], 
+                   color='#ff6b6b', linewidth=5, solid_capstyle='round')
+            ax.plot([borehole_center + center_offset, borehole_center + center_offset], [0, 15], 
+                   color='#4ecdc4', linewidth=5, solid_capstyle='round')
+            
+            # U-Bogen unten
+            arc1 = Arc((borehole_center - center_offset + spacing/2, 0.3), spacing*1.5, 0.4, 
+                      angle=0, theta1=180, theta2=360, color='black', linewidth=2)
+            arc2 = Arc((borehole_center + center_offset - spacing/2, 0.3), spacing*1.5, 0.4, 
+                      angle=0, theta1=180, theta2=360, color='black', linewidth=2)
+            ax.add_patch(arc1)
+            ax.add_patch(arc2)
+            
+            # === BESCHRIFTUNGEN ===
+            bh_left = borehole_center - borehole_width/2
+            bh_right = borehole_center + borehole_width/2
+            bh_diameter = params.get('borehole_diameter', 0.152)
+            
+            # Durchmesser
+            ax.annotate('', xy=(bh_left, 16), xytext=(bh_right, 16),
+                       arrowprops=dict(arrowstyle='<->', color='black', lw=2))
+            ax.text(borehole_center, 16.6, f'Bohrloch Ø {bh_diameter*1000:.0f}mm', ha='center', fontsize=12, 
+                   fontweight='bold', bbox=dict(boxstyle='round,pad=0.5', facecolor='yellow', edgecolor='black'))
+            
+            # Tiefe
+            ax.annotate('', xy=(0.5, 0), xytext=(0.5, 15),
+                       arrowprops=dict(arrowstyle='<->', color='#2196f3', lw=2))
+            ax.text(-0.3, 7.5, 'Tiefe\nbis 100m', ha='center', fontsize=11, 
+                   fontweight='bold', color='#1976d2', rotation=90,
+                   bbox=dict(boxstyle='round,pad=0.4', facecolor='white', edgecolor='#2196f3'))
+            
+            # Verfüllung
+            ax.text(borehole_center, 10, 'Verfüllung\n(Zement-Bentonit)', ha='center', fontsize=10,
+                   bbox=dict(boxstyle='round,pad=0.4', facecolor='#e0e0e0', edgecolor='black'))
+            
+            # Rohrmaterial
+            ax.text(7.5, 12, 'PE 100 RC\nØ 32mm', ha='left', fontsize=10,
+                   bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='black'))
+            ax.annotate('', xy=(bh_right + 0.1, 12), xytext=(7.3, 12),
+                       arrowprops=dict(arrowstyle='->', color='black', lw=1.5))
+            
+            # === QUERSCHNITT (größer, ohne Text - nur Nummern) ===
+            from matplotlib.transforms import Bbox
+            ax_inset = fig.add_axes([0.58, 0.52, 0.38, 0.42])
+            
+            # Bohrloch-Kreis
+            bh_circle = Circle((0, 0), 1, facecolor='#d9d9d9', edgecolor='black', linewidth=2.5)
+            ax_inset.add_patch(bh_circle)
+            
+            # 4 Rohre in QUADRAT-Anordnung
+            positions = [(-0.35, 0.35), (0.35, 0.35), (-0.35, -0.35), (0.35, -0.35)]
+            colors_pipes = ['#ff6b6b', '#4ecdc4', '#ff6b6b', '#4ecdc4']
+            
+            for i, ((x, y), color) in enumerate(zip(positions, colors_pipes)):
+                pipe_circle = Circle((x, y), 0.2, facecolor=color, edgecolor='black', linewidth=1.5)
+                ax_inset.add_patch(pipe_circle)
+                ax_inset.text(x, y, str(i+1), ha='center', va='center', 
+                             fontsize=12, fontweight='bold', color='white')
+            
+            ax_inset.set_xlim(-1.1, 1.1)
+            ax_inset.set_ylim(-1.1, 1.1)
+            ax_inset.set_aspect('equal')
+            ax_inset.axis('off')
+            
+            # Hauptgrafik-Einstellungen
+            ax.set_xlim(0, 9)
+            ax.set_ylim(-1, 18)
+            ax.set_aspect('equal')
+            ax.axis('off')
+            
+            fig.tight_layout()
+            
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
+            plt.savefig(temp_file.name, dpi=150, bbox_inches='tight')
+            plt.close(fig)
+            
+            return temp_file.name
+        except Exception as e:
+            print(f"Fehler beim Erstellen der statischen Bohrloch-Grafik: {e}")
             return None
 
 

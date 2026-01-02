@@ -1217,9 +1217,13 @@ class GeothermieGUIProfessional:
                 # Bohrfeld
                 borehole_config = {key: float(entry.get()) for key, entry in self.borehole_entries.items()}
                 
-                # PDF erstellen
-                self.pdf_generator.generate_report(filename, self.result, self.current_params,
-                                                   project_info, borehole_config)
+                # PDF erstellen (mit optionalen Verfüllmaterial- und Hydraulik-Daten)
+                self.pdf_generator.generate_report(
+                    filename, self.result, self.current_params,
+                    project_info, borehole_config,
+                    grout_calculation=getattr(self, 'grout_calculation', None),
+                    hydraulics_result=getattr(self, 'hydraulics_result', None)
+                )
                 
                 self.status_var.set(f"✓ PDF erstellt: {os.path.basename(filename)}")
                 messagebox.showinfo("Erfolg", f"PDF-Bericht wurde erstellt!")
