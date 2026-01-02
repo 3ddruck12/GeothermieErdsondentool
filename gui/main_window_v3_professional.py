@@ -567,12 +567,11 @@ class GeothermieGUIProfessional:
         ax.annotate('', xy=(bh_right + 0.1, 12), xytext=(7.3, 12),
                    arrowprops=dict(arrowstyle='->', color='black', lw=1.5))
         
-        # === QUERSCHNITT (größer, nicht zusammengequetscht) ===
+        # === QUERSCHNITT (größer, ohne Text - nur Nummern) ===
         ax_inset = fig.add_axes([0.58, 0.52, 0.38, 0.42])  # Größer: breiter und höher
-        ax_inset.set_title('Querschnitt von oben', fontsize=10, fontweight='bold', pad=10)
         
         # Bohrloch-Kreis
-        bh_circle = Circle((0, 0), 1, facecolor='#d9d9d9', edgecolor='black', linewidth=2.5, label='Bohrloch')
+        bh_circle = Circle((0, 0), 1, facecolor='#d9d9d9', edgecolor='black', linewidth=2.5)
         ax_inset.add_patch(bh_circle)
         
         # 4 Rohre in QUADRAT-Anordnung
@@ -584,14 +583,10 @@ class GeothermieGUIProfessional:
             pipe_circle = Circle((x, y), 0.2, facecolor=color, edgecolor='black', linewidth=1.5)
             ax_inset.add_patch(pipe_circle)
             ax_inset.text(x, y, str(i+1), ha='center', va='center', 
-                         fontsize=10, fontweight='bold', color='white')
-        
-        # Legende UNTEN
-        ax_inset.text(0, -1.25, 'Vorlauf (rot)  |  Rücklauf (blau)', 
-                     ha='center', fontsize=9, style='italic', fontweight='bold')
+                         fontsize=11, fontweight='bold', color='white')
         
         ax_inset.set_xlim(-1.1, 1.1)
-        ax_inset.set_ylim(-1.5, 1.1)
+        ax_inset.set_ylim(-1.1, 1.1)
         ax_inset.set_aspect('equal')
         ax_inset.axis('off')
         
