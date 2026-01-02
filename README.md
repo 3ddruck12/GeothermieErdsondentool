@@ -1,9 +1,9 @@
 <div align="center">
-  <img src="logo.png" alt="GET Logo" width="128" height="128">
+  <img src="Icons/logo-7.png" alt="GET Logo" width="128" height="128">
   
   # GET - Geothermie Erdsonden Tool
   
-  **GET** steht für **G**eothermie **E**rdsonden** T**ool
+  **GET** steht für **G**eothermie **E**rdsonden**T**ool
 </div>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
