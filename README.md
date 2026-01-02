@@ -1,7 +1,7 @@
 <div align="center">
   <img src="logo.png" alt="GET Logo" width="128" height="128">
   
-  # GET - Geothermie Erdsondentool
+  # GET - Geothermie Erdsonden Tool
   
   **GET** steht für **G**eothermie **E**rdsonden**t**ool
 </div>
