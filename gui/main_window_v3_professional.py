@@ -115,9 +115,16 @@ class GeothermieGUIProfessional:
     
     def _create_input_tab(self):
         """Erstellt den Eingabe-Tab mit allen Professional Features."""
-        # Scrollbarer Container
-        canvas = tk.Canvas(self.input_frame)
-        scrollbar = ttk.Scrollbar(self.input_frame, orient="vertical", command=canvas.yview)
+        # 2-Spalten-Layout: Eingaben links, Grafik rechts
+        main_container = ttk.Frame(self.input_frame)
+        main_container.pack(fill=tk.BOTH, expand=True)
+        
+        # Linke Seite: Scrollbarer Container für Eingaben
+        left_frame = ttk.Frame(main_container)
+        left_frame.pack(side="left", fill="both", expand=True)
+        
+        canvas = tk.Canvas(left_frame)
+        scrollbar = ttk.Scrollbar(left_frame, orient="vertical", command=canvas.yview)
         scrollable_frame = ttk.Frame(canvas)
         
         scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
@@ -126,6 +133,11 @@ class GeothermieGUIProfessional:
         
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
+        
+        # Rechte Seite: Statische Grafik
+        right_frame = ttk.Frame(main_container, relief=tk.RIDGE, borderwidth=2)
+        right_frame.pack(side="right", fill="both", padx=10, pady=10)
+        self._create_static_borehole_graphic(right_frame)
         
         row = 0
         self.entries = {}
@@ -472,6 +484,135 @@ class GeothermieGUIProfessional:
         self.fig = Figure(figsize=(18, 6))  # Breiter für 3 Subplots
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.viz_frame)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+    
+    def _create_static_borehole_graphic(self, parent):
+        """Erstellt eine statische Erklärungsgrafik einer Erdsonde mit 4 Leitungen."""
+        # Titel
+        title_label = ttk.Label(parent, text="📐 Erdsonden-Aufbau", 
+                               font=("Arial", 14, "bold"))
+        title_label.pack(pady=(10, 5))
+        
+        # Erstelle Figure für statische Grafik
+        from matplotlib.figure import Figure
+        from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+        from matplotlib.patches import Circle, Rectangle, FancyArrow
+        
+        fig = Figure(figsize=(5, 7), facecolor='white')
+        ax = fig.add_subplot(111)
+        
+        # === SEITLICHE ANSICHT (Schnitt durch Sonde) ===
+        # Boden (braun)
+        ground = Rectangle((0, 0), 10, 15, facecolor='#8B4513', alpha=0.3, label='Boden')
+        ax.add_patch(ground)
+        
+        # Bohrloch (hellgrau)
+        borehole_left = Rectangle((3.5, 0), 0.3, 15, facecolor='#d9d9d9', edgecolor='black', linewidth=2)
+        borehole_right = Rectangle((6.2, 0), 0.3, 15, facecolor='#d9d9d9', edgecolor='black', linewidth=2)
+        ax.add_patch(borehole_left)
+        ax.add_patch(borehole_right)
+        
+        # 4 Leitungen (Vorlauf rot, Rücklauf blau)
+        # Links: Vorlauf 1 + Rücklauf 2
+        ax.plot([3.65, 3.65], [0, 15], color='#ff6b6b', linewidth=4, label='Vorlauf (warm)', solid_capstyle='round')
+        ax.plot([3.95, 3.95], [0, 15], color='#4ecdc4', linewidth=4, label='Rücklauf (kalt)', solid_capstyle='round')
+        
+        # Rechts: Vorlauf 3 + Rücklauf 4
+        ax.plot([6.35, 6.35], [0, 15], color='#ff6b6b', linewidth=4, solid_capstyle='round')
+        ax.plot([6.65, 6.65], [0, 15], color='#4ecdc4', linewidth=4, solid_capstyle='round')
+        
+        # U-Bogen unten
+        from matplotlib.patches import Arc
+        arc1 = Arc((3.8, 0.3), 0.6, 0.6, angle=0, theta1=180, theta2=360, 
+                  color='black', linewidth=2)
+        arc2 = Arc((6.5, 0.3), 0.6, 0.6, angle=0, theta1=180, theta2=360, 
+                  color='black', linewidth=2)
+        ax.add_patch(arc1)
+        ax.add_patch(arc2)
+        
+        # === BESCHRIFTUNGEN ===
+        # Durchmesser
+        ax.annotate('', xy=(3.5, 16), xytext=(6.5, 16),
+                   arrowprops=dict(arrowstyle='<->', color='black', lw=2))
+        ax.text(5, 16.5, 'Bohrloch Ø 152mm', ha='center', fontsize=10, 
+               fontweight='bold', bbox=dict(boxstyle='round,pad=0.5', 
+               facecolor='yellow', edgecolor='black'))
+        
+        # Tiefe
+        ax.annotate('', xy=(-0.5, 0), xytext=(-0.5, 15),
+                   arrowprops=dict(arrowstyle='<->', color='#2196f3', lw=2))
+        ax.text(-1.5, 7.5, 'Tiefe\nbis 100m', ha='center', fontsize=9, 
+               fontweight='bold', color='#1976d2', rotation=90,
+               bbox=dict(boxstyle='round,pad=0.4', facecolor='white', edgecolor='#2196f3'))
+        
+        # Rohre nummerieren
+        ax.text(3.65, 14, '1', ha='center', va='center', fontsize=8, 
+               fontweight='bold', color='white',
+               bbox=dict(boxstyle='circle,pad=0.3', facecolor='#ff6b6b', edgecolor='black'))
+        ax.text(3.95, 14, '2', ha='center', va='center', fontsize=8, 
+               fontweight='bold', color='white',
+               bbox=dict(boxstyle='circle,pad=0.3', facecolor='#4ecdc4', edgecolor='black'))
+        ax.text(6.35, 14, '3', ha='center', va='center', fontsize=8, 
+               fontweight='bold', color='white',
+               bbox=dict(boxstyle='circle,pad=0.3', facecolor='#ff6b6b', edgecolor='black'))
+        ax.text(6.65, 14, '4', ha='center', va='center', fontsize=8, 
+               fontweight='bold', color='white',
+               bbox=dict(boxstyle='circle,pad=0.3', facecolor='#4ecdc4', edgecolor='black'))
+        
+        # Verfüllung
+        ax.text(5, 10, 'Verfüllung\n(Zement-Bentonit)', ha='center', fontsize=8,
+               bbox=dict(boxstyle='round,pad=0.4', facecolor='#e0e0e0', edgecolor='black'))
+        
+        # Rohrmaterial
+        ax.text(8.5, 13, 'PE 100 RC\nØ 32mm', ha='left', fontsize=8,
+               bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='black'))
+        ax.annotate('', xy=(6.7, 13), xytext=(8.3, 13),
+                   arrowprops=dict(arrowstyle='->', color='black', lw=1))
+        
+        # === QUERSCHNITT (kleiner, oben rechts) ===
+        ax_inset = fig.add_axes([0.65, 0.75, 0.3, 0.2])
+        ax_inset.set_title('Querschnitt', fontsize=8, fontweight='bold')
+        
+        # Bohrloch-Kreis
+        bh_circle = Circle((0, 0), 1, facecolor='#d9d9d9', edgecolor='black', linewidth=2)
+        ax_inset.add_patch(bh_circle)
+        
+        # 4 Rohre
+        positions = [(-0.4, 0.4), (0.4, 0.4), (-0.4, -0.4), (0.4, -0.4)]
+        colors = ['#ff6b6b', '#4ecdc4', '#ff6b6b', '#4ecdc4']
+        for i, ((x, y), color) in enumerate(zip(positions, colors)):
+            pipe_circle = Circle((x, y), 0.2, facecolor=color, edgecolor='black', linewidth=1)
+            ax_inset.add_patch(pipe_circle)
+            ax_inset.text(x, y, str(i+1), ha='center', va='center', 
+                         fontsize=7, fontweight='bold', color='white')
+        
+        ax_inset.set_xlim(-1.3, 1.3)
+        ax_inset.set_ylim(-1.3, 1.3)
+        ax_inset.set_aspect('equal')
+        ax_inset.axis('off')
+        
+        # Hauptgrafik-Einstellungen
+        ax.set_xlim(-2, 10)
+        ax.set_ylim(-1, 18)
+        ax.set_aspect('equal')
+        ax.axis('off')
+        ax.legend(loc='upper left', fontsize=8)
+        
+        fig.tight_layout()
+        
+        # Canvas in Frame einbetten
+        canvas = FigureCanvasTkAgg(fig, master=parent)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        # Erklärungstext
+        info_text = ttk.Label(parent, text=
+            "4-Rohr-System (Double-U)\n" +
+            "• 2× Vorlauf (rot)\n" +
+            "• 2× Rücklauf (blau)\n" +
+            "• Geschlossenes System\n" +
+            "• Sole zirkuliert kontinuierlich",
+            font=("Arial", 9), justify=tk.LEFT, foreground='#424242')
+        info_text.pack(pady=(0, 10))
     
     def _create_status_bar(self):
         """Erstellt die Statusleiste."""
@@ -939,10 +1080,11 @@ class GeothermieGUIProfessional:
         try:
             from matplotlib.patches import Rectangle
             
-            num_boreholes = int(self.borehole_entries["num_boreholes"].get())
-            spacing = float(self.borehole_entries["borehole_spacing"].get())
-            boundary_dist = float(self.borehole_entries["boundary_distance"].get())
-            house_dist = float(self.borehole_entries["house_distance"].get())
+            # Sichere Werte mit Fallback
+            num_boreholes = int(self.borehole_entries.get("num_boreholes", ttk.Entry()).get() or "1")
+            spacing = float(self.borehole_entries.get("borehole_spacing", ttk.Entry()).get() or "6.0")
+            boundary_dist = float(self.borehole_entries.get("boundary_distance", ttk.Entry()).get() or "3.0")
+            house_dist = float(self.borehole_entries.get("house_distance", ttk.Entry()).get() or "3.0")
             
             # Grundstück zeichnen (Rechteck)
             total_width = max(20, spacing * max(1, num_boreholes - 1) + 2 * boundary_dist + 10)
