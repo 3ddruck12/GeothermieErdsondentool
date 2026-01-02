@@ -25,7 +25,6 @@
 - [Schnellstart](#-schnellstart)
 - [Dokumentation](#-dokumentation)
 - [Screenshots](#-screenshots)
-- [Roadmap](#-roadmap)
 - [Mitwirken](#-mitwirken)
 - [Lizenz](#-lizenz)
 
@@ -253,19 +252,6 @@ Vollständige Dokumentation im [`docs/`](docs/) Ordner:
 - 📈 Grafiken und Temperaturverläufe
 - 🏗️ Verfüllmaterial-Berechnung (m³, Liter, Kosten)
 - 💧 Hydraulik-Analyse (Druckverlust, Pumpenleistung)
-
----
-
-
-## 📈 Roadmap
-
-Die detaillierte Roadmap mit allen geplanten Features findest du in [docs/ROADMAP.md](docs/ROADMAP.md).
-
-**Highlights:**
-- 🌍 Mehrsprachigkeit (V3.1)
-- 🎮 3D-Visualisierung (V4.0)
-- 💰 Kostenberechnung (V4.0)
-- 🤖 Optimierungsalgorithmus (V4.0)
 
 ---
 
