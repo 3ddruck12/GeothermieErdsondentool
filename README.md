@@ -19,14 +19,40 @@
 
 ## 📋 Inhaltsverzeichnis
 
+- [Systemanforderungen](#-systemanforderungen)
 - [Features](#-features)
 - [Installation](#-installation)
 - [Schnellstart](#-schnellstart)
 - [Dokumentation](#-dokumentation)
 - [Screenshots](#-screenshots)
-- [Entwicklung](#-entwicklung)
 - [Roadmap](#-roadmap)
+- [Mitwirken](#-mitwirken)
 - [Lizenz](#-lizenz)
+
+---
+
+## 💻 Systemanforderungen
+
+### Unterstützte Betriebssysteme
+
+#### Windows
+- ✅ Windows 11 (alle Versionen)
+- ✅ Windows 10 (alle Versionen)
+
+#### Linux
+- ✅ Ubuntu 20.04 LTS oder neuer
+- ✅ Ubuntu 22.04 LTS
+- ✅ Ubuntu 24.04 LTS
+- ✅ Linux Mint 20.x oder neuer
+- ✅ Linux Mint 21.x
+- ✅ Debian 11 (Bullseye) oder neuer
+- ✅ Debian 12 (Bookworm)
+
+### Mindestanforderungen
+- **Python**: 3.12 oder höher (bei Python-Installation)
+- **RAM**: 4 GB (empfohlen: 8 GB)
+- **Festplatte**: 500 MB freier Speicherplatz
+- **Display**: 1280x720 oder höher
 
 ---
 
@@ -71,13 +97,14 @@
 
 ## 💾 Installation
 
-### Windows
+### Windows (10/11)
 
 **Option 1: Standalone EXE** (empfohlen)
 
 1. [Neueste Release herunterladen](https://github.com/3ddruck12/GeothermieErdsondentool/releases)
 2. `GeothermieErdsondentool.exe` herunterladen
 3. Doppelklick zum Starten
+4. Falls Windows Defender warnt: "Weitere Informationen" → "Trotzdem ausführen"
 
 **Option 2: Python**
 
@@ -90,15 +117,22 @@ pip install -r requirements.txt
 python main.py
 ```
 
-### Linux
+### Linux (Ubuntu/Debian/Linux Mint)
 
-**Option 1: DEB-Paket** (Debian/Ubuntu)
+**Option 1: DEB-Paket** (empfohlen für Ubuntu, Debian, Linux Mint)
 
 ```bash
-wget https://github.com/3ddruck12/GeothermieErdsondentool/releases/download/v3.0.0/geothermie-erdsondentool_3.0.0_amd64.deb
-sudo dpkg -i geothermie-erdsondentool_3.0.0_amd64.deb
+# Neueste Version herunterladen
+wget https://github.com/3ddruck12/GeothermieErdsondentool/releases/download/v3.1.0/geothermie-erdsondentool_3.1.0_amd64.deb
+
+# Installieren
+sudo dpkg -i geothermie-erdsondentool_3.1.0_amd64.deb
 sudo apt-get install -f  # Falls Abhängigkeiten fehlen
+
+# Starten
 geothermie-erdsondentool
+
+# Oder über das Anwendungsmenü: "GET - Geothermie Erdsondentool"
 ```
 
 **Option 2: Shell-Script**
