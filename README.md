@@ -1,2 +1,2 @@
-# Geothermie Erdsonden tool GET
+# Geothermie Erdsonden Tool GET
 Ein Rechner für Erdsonden bis 100m EWS System
