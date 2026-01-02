@@ -9,7 +9,7 @@
 
 > **Open-Source Tool zur professionellen Berechnung von Erdwärmesonden bis 100m Tiefe**
 
-**GET** ist eine moderne, benutzerfreundliche Alternative zu Earth Energy Designer (EED) für Linux und Windows.
+**GET** ist eine moderne, benutzerfreundliche Open-Source-Alternative zu kommerziellen Erdwärmesonden-Berechnungsprogrammen für Linux und Windows.
 
 ---
 
@@ -331,9 +331,9 @@ Dieses Projekt ist unter der MIT-Lizenz lizenziert - siehe [LICENSE](LICENSE) f�
 
 ## 🙏 Danksagungen
 
-- **Earth Energy Designer (EED)**: Inspiration und Referenz
 - **VDI 4640**: Bodenwerte und Berechnungsstandards
-- **PVGIS**: EU-Klimadatenbank
+- **PVGIS**: EU-Klimadatenbank  
+- **Wissenschaftliche Community**: Für Forschung und Methodik im Bereich Geothermie
 - **Python Community**: Für die großartigen Libraries
 
 ---
