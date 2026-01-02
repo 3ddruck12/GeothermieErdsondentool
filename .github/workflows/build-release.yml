@@ -1,0 +1,169 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - dev
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  build-windows:
+    name: Build Windows EXE
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+    
+    - name: Build Windows executable
+      run: |
+        pyinstaller --onefile --windowed --name GeothermieErdsondentool --icon=docs/icon.ico main.py
+    
+    - name: Upload Windows artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: GeothermieErdsondentool-Windows
+        path: dist/GeothermieErdsondentool.exe
+  
+  build-linux:
+    name: Build Linux DEB
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+    
+    - name: Build Linux executable
+      run: |
+        pyinstaller --onefile --name geothermie-erdsondentool main.py
+    
+    - name: Install fpm for DEB creation
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ruby ruby-dev build-essential
+        sudo gem install fpm
+    
+    - name: Create DEB package
+      run: |
+        mkdir -p package/usr/local/bin
+        mkdir -p package/usr/share/applications
+        mkdir -p package/usr/share/doc/geothermie-erdsondentool
+        
+        cp dist/geothermie-erdsondentool package/usr/local/bin/
+        chmod +x package/usr/local/bin/geothermie-erdsondentool
+        
+        # Desktop Entry
+        cat > package/usr/share/applications/geothermie-erdsondentool.desktop << EOF
+        [Desktop Entry]
+        Name=Geothermie Erdsondentool
+        Comment=Berechnung von Erdwärmesonden bis 100m
+        Exec=/usr/local/bin/geothermie-erdsondentool
+        Terminal=false
+        Type=Application
+        Categories=Science;Engineering;
+        EOF
+        
+        # Documentation
+        cp README.md package/usr/share/doc/geothermie-erdsondentool/
+        cp LICENSE package/usr/share/doc/geothermie-erdsondentool/
+        cp -r docs/* package/usr/share/doc/geothermie-erdsondentool/
+        
+        # Create DEB
+        fpm -s dir -t deb \
+          -n geothermie-erdsondentool \
+          -v 3.0.0 \
+          --architecture amd64 \
+          --description "Open-Source Tool zur Berechnung von Erdwärmesonden bis 100m Tiefe" \
+          --url "https://github.com/3ddruck12/GeothermieErdsondentool" \
+          --maintainer "3ddruck12" \
+          --license "MIT" \
+          -C package \
+          usr/local/bin usr/share/applications usr/share/doc
+    
+    - name: Upload DEB artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: GeothermieErdsondentool-Linux-DEB
+        path: "*.deb"
+  
+  create-release:
+    name: Create Release
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - name: Download Windows artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: GeothermieErdsondentool-Windows
+    
+    - name: Download Linux DEB artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: GeothermieErdsondentool-Linux-DEB
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          GeothermieErdsondentool.exe
+          *.deb
+        body: |
+          ## Geothermie Erdsondentool Release
+          
+          ### Downloads
+          - **Windows**: `GeothermieErdsondentool.exe`
+          - **Linux**: `geothermie-erdsondentool_3.0.0_amd64.deb`
+          
+          ### Installation
+          
+          #### Windows
+          1. EXE herunterladen
+          2. Ausführen (eventuell Windows Defender Warnung bestätigen)
+          
+          #### Linux (Debian/Ubuntu)
+          ```bash
+          sudo dpkg -i geothermie-erdsondentool_3.0.0_amd64.deb
+          sudo apt-get install -f  # Falls Abhängigkeiten fehlen
+          ```
+          
+          ### Features
+          - ✅ Berechnung von Erdwärmesonden bis 100m
+          - ✅ PE 100 RC Rohre mit Dual- und 4-Verbinder
+          - ✅ PDF-Berichtserstellung
+          - ✅ PVGIS Klimadaten-Integration
+          - ✅ Bodendatenbank nach VDI 4640
+          - ✅ Verfüllmaterial-Datenbank
+          - ✅ Info-Buttons mit Hilfe
+          
+          [Vollständige Dokumentation](https://github.com/3ddruck12/GeothermieErdsondentool/tree/main/docs)
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

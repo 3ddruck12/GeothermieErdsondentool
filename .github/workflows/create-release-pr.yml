@@ -1,0 +1,66 @@
+name: Create Release PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version Number (z.B. 3.1.0)'
+        required: true
+        type: string
+
+jobs:
+  create-pr:
+    name: Create PR from dev to main
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout dev branch
+      uses: actions/checkout@v4
+      with:
+        ref: dev
+        fetch-depth: 0
+    
+    - name: Set up Git
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+    
+    - name: Update version in files
+      run: |
+        # Update version in setup files if needed
+        echo "Version: ${{ inputs.version }}"
+    
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v6
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: release/v${{ inputs.version }}
+        base: main
+        title: '🚀 Release v${{ inputs.version }}'
+        body: |
+          ## 🎉 Release v${{ inputs.version }}
+          
+          Dieser PR merged den aktuellen `dev`-Branch in `main` für das Release v${{ inputs.version }}.
+          
+          ### ✅ Checkliste vor Merge
+          - [ ] Alle Tests bestanden
+          - [ ] Dokumentation aktualisiert
+          - [ ] CHANGELOG.md aktualisiert
+          - [ ] Version-Number in Dateien aktualisiert
+          - [ ] EXE & DEB Builds erfolgreich
+          - [ ] Manuelles Testing durchgeführt
+          
+          ### 📋 Änderungen
+          Siehe [CHANGELOG.md](docs/CHANGELOG.md) für Details.
+          
+          ### 🔄 Nach Merge
+          1. Tag erstellen: `git tag v${{ inputs.version }}`
+          2. Tag pushen: `git push origin v${{ inputs.version }}`
+          3. Release-Builds werden automatisch erstellt
+          4. GitHub Release wird automatisch erstellt
+          
+          ---
+          *Automatisch erstellt von GitHub Actions*
+        labels: release
+        assignees: 3ddruck12
+

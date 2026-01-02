@@ -1,0 +1,60 @@
+name: Tests
+
+on:
+  push:
+    branches: [ dev, main ]
+  pull_request:
+    branches: [ dev, main ]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.12']
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Test imports
+      run: |
+        python -c "import tkinter; print('tkinter OK')"
+        python -c "import matplotlib; print('matplotlib OK')"
+        python -c "import numpy; print('numpy OK')"
+        python -c "import pandas; print('pandas OK')"
+        python -c "import reportlab; print('reportlab OK')"
+        python -c "import requests; print('requests OK')"
+    
+    - name: Test modules
+      run: |
+        python -m calculations.thermal
+        python -m data.soil_types
+        python -m data.grout_materials
+    
+    - name: Test PVGIS (with fallback)
+      run: |
+        python -m utils.pvgis_api || echo "PVGIS test failed (expected if offline)"
+    
+    - name: Syntax check all Python files
+      run: |
+        python -m py_compile main.py
+        python -m py_compile calculations/*.py
+        python -m py_compile data/*.py
+        python -m py_compile gui/*.py
+        python -m py_compile parsers/*.py
+        python -m py_compile utils/*.py
+      shell: bash
+
