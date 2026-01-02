@@ -3,7 +3,7 @@
   
   # GET - Geothermie Erdsonden Tool
   
-  **GET** steht für **G**eothermie **E**rdsonden**t**ool
+  **GET** steht für **G**eothermie **E**rdsonden** T**ool
 </div>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
