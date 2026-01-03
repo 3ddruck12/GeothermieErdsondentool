@@ -19,3 +19,4 @@ fi
 echo "Starte Geothermietool..."
 python main.py
 
+

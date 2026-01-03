@@ -179,3 +179,4 @@ Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Details.
 
 **Stand**: Januar 2026
 
+
